@@ -48,25 +48,26 @@ pipeline {
     stage('Deploy to OpenShift') {
       steps {
         script {
-          sh """
-            echo '🔐 Logging into OpenShift...'
-            oc login --token=$OPENSHIFT_TOKEN --server=$OPENSHIFT_SERVER --insecure-skip-tls-verify=true
-            oc project $OPENSHIFT_PROJECT
+          withCredentials([string(credentialsId: 'openshift-token', variable: 'OPENSHIFT_TOKEN')]) {
+            sh """
+              echo "🔐 Logging into OpenShift..."
+              oc login --token=$OPENSHIFT_TOKEN --server=$OPENSHIFT_SERVER --insecure-skip-tls-verify=true
+              oc project $OPENSHIFT_PROJECT
 
-            echo '🚀 Applying deployments...'
-            oc apply -f k8s/gateway-deployment.yaml
-            oc apply -f k8s/order-deployment.yaml
-            oc apply -f k8s/enrichment-deployment.yaml
+              echo "🚀 Applying Deployments..."
+              oc apply -f k8s/gateway-deployment.yaml
+              oc apply -f k8s/order-deployment.yaml
+              oc apply -f k8s/enrichment-deployment.yaml
 
-            echo '♻️ Restarting deployments...'
-            oc rollout restart deployment/gateway-service || true
-            oc rollout restart deployment/order-service || true
-            oc rollout restart deployment/enrichment-service || true
-          """
+              echo "♻️ Restarting Deployments..."
+              oc rollout restart deployment/gateway-service || true
+              oc rollout restart deployment/order-service || true
+              oc rollout restart deployment/enrichment-service || true
+            """
+          }
         }
       }
     }
-  }
 
   post {
     success {
