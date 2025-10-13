@@ -10,6 +10,7 @@ pipeline {
     DOCKERHUB_USER = 'akshitasdock'
     OPENSHIFT_SERVER = 'https://api.rm3.7wse.p1.openshiftapps.com:6443'
     OPENSHIFT_PROJECT = 'akshita2002bajaj15-dev'
+    OPENSHIFT_TOKEN = credentials('openshift-token')
   }
 
   stages {
