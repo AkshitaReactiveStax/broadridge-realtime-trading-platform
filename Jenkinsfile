@@ -7,10 +7,10 @@ pipeline {
   }
 
   environment {
-    DOCKERHUB_USER = 'akshitasdock'
-    OPENSHIFT_SERVER = 'https://api.rm3.7wse.p1.openshiftapps.com:6443'
-    OPENSHIFT_PROJECT = 'akshita2002bajaj15-dev'
-    OPENSHIFT_TOKEN = credentials('openshift-token')
+      DOCKERHUB_USER = 'akshitasdock'
+      OPENSHIFT_SERVER = 'https://api.rm3.7wse.p1.openshiftapps.com:6443'
+      OPENSHIFT_PROJECT = 'akshita2002bajaj15-dev'
+      OPENSHIFT_TOKEN = credentials('openshift-token-jenkins')
   }
 
   stages {
@@ -54,22 +54,22 @@ pipeline {
       steps {
         script {
           // Use the OpenShift secret token here
-          withCredentials([string(credentialsId: 'openshift-token', variable: 'OPENSHIFT_TOKEN')]) {
-            sh """
-              echo "🔐 Logging into OpenShift..."
-              oc login --token=$OPENSHIFT_TOKEN --server=$OPENSHIFT_SERVER --insecure-skip-tls-verify=true
-              oc project $OPENSHIFT_PROJECT
+          withCredentials([string(credentialsId: 'openshift-token-jenkins', variable: 'OPENSHIFT_TOKEN')]) {
+              sh """
+                echo "🔐 Logging into OpenShift..."
+                oc login --token=$OPENSHIFT_TOKEN --server=$OPENSHIFT_SERVER --insecure-skip-tls-verify=true
+                oc project $OPENSHIFT_PROJECT
 
-              echo "🚀 Applying Deployments..."
-              oc apply -f k8s/gateway-deployment.yaml
-              oc apply -f k8s/order-deployment.yaml
-              oc apply -f k8s/enrichment-deployment.yaml
+                echo "🚀 Applying Deployments..."
+                oc apply -f k8s/gateway-deployment.yaml
+                oc apply -f k8s/order-deployment.yaml
+                oc apply -f k8s/enrichment-deployment.yaml
 
-              echo "♻️ Restarting Deployments..."
-              oc rollout restart deployment/gateway-service || true
-              oc rollout restart deployment/order-service || true
-              oc rollout restart deployment/enrichment-service || true
-            """
+                echo "♻️ Restarting Deployments..."
+                oc rollout restart deployment/gateway-service || true
+                oc rollout restart deployment/order-service || true
+                oc rollout restart deployment/enrichment-service || true
+              """
           }
         }
       }
