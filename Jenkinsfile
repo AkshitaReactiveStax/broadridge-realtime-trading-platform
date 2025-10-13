@@ -3,14 +3,12 @@ pipeline {
 
   tools {
     jdk 'jdk-17'
-    maven 'maven-3.9.11'
+    maven 'maven-3.9.6'
   }
 
   environment {
-    DOCKERHUB_USER = 'your-dockerhub-username'
-    DOCKERHUB_PASS = credentials('dockerhub-credentials-id')
+    DOCKERHUB_USER = 'akshitasdock'
     OPENSHIFT_SERVER = 'https://api.rm3.7wse.p1.openshiftapps.com:6443'
-    OPENSHIFT_TOKEN = credentials('openshift-token')
     OPENSHIFT_PROJECT = 'akshita2002bajaj15-dev'
   }
 
@@ -18,7 +16,7 @@ pipeline {
 
     stage('Checkout') {
       steps {
-        git branch: 'main', url: 'https://github.com/your-repo/broadridge-realtime-trading-platform.git'
+        git branch: 'main', url: 'https://github.com/AkshitaReactiveStax/broadridge-realtime-trading-platform.git'
       }
     }
 
@@ -31,14 +29,20 @@ pipeline {
     stage('Docker Build & Push') {
       steps {
         script {
-          docker.withRegistry('', 'dockerhub-credentials-id') {
+          withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials-id', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
             sh """
-              docker build -t $DOCKERHUB_USER/gateway-service:latest gateway-service
-              docker build -t $DOCKERHUB_USER/order-service:latest order-service
-              docker build -t $DOCKERHUB_USER/trade-enrichment-service:latest trade-capture-enrichment-service
-              docker push $DOCKERHUB_USER/gateway-service:latest
-              docker push $DOCKERHUB_USER/order-service:latest
-              docker push $DOCKERHUB_USER/trade-enrichment-service:latest
+              echo "🔧 Building Docker images..."
+              echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
+              docker build -t ${DOCKERHUB_USER}/gateway-service:latest gateway-service
+              docker build -t ${DOCKERHUB_USER}/order-service:latest order-service
+              docker build -t ${DOCKERHUB_USER}/trade-enrichment-service:latest trade-capture-enrichment-service
+
+              docker push ${DOCKERHUB_USER}/gateway-service:latest
+              docker push ${DOCKERHUB_USER}/order-service:latest
+              docker push ${DOCKERHUB_USER}/trade-enrichment-service:latest
+
+              docker logout
             """
           }
         }
@@ -48,6 +52,7 @@ pipeline {
     stage('Deploy to OpenShift') {
       steps {
         script {
+          // Use the OpenShift secret token here
           withCredentials([string(credentialsId: 'openshift-token', variable: 'OPENSHIFT_TOKEN')]) {
             sh """
               echo "🔐 Logging into OpenShift..."
@@ -68,13 +73,14 @@ pipeline {
         }
       }
     }
+  }
 
   post {
     success {
       echo '✅ Deployment to OpenShift successful!'
     }
     failure {
-      echo '❌ Deployment failed. Check logs.'
+      echo '❌ Deployment failed. Check Jenkins logs.'
     }
   }
 }
