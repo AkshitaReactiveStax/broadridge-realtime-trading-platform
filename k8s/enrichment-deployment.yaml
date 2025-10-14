@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: trade-capture-enrichment-service
-          image: akshitasdock/trade-capture-enrichment-service:latest
+          image: docker.io/akshitasdock/trade-capture-enrichment-service:latest
           ports:
             - containerPort: 8082
 ---

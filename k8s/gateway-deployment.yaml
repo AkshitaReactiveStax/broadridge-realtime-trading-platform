@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: gateway-service
-          image: akshitasdock/gateway-service:latest
+          image: docker.io/akshitasdock/gateway-service:latest
           ports:
             - containerPort: 8080
 ---
