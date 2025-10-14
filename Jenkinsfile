@@ -30,15 +30,30 @@ pipeline {
     stage('Docker Build & Push') {
       steps {
         script {
-          withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials-id', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          withCredentials([
+            usernamePassword(credentialsId: 'dockerhub-credentials-id', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS'),
+            string(credentialsId: 'dynatrace-token', variable: 'DT_API_TOKEN')
+          ]) {
             sh """
-              echo "🔧 Building Docker images..."
+              echo "🔧 Building and pushing Docker images with Dynatrace instrumentation..."
               echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
-              docker build --platform linux/amd64 -t ${DOCKERHUB_USER}/gateway-service:latest gateway-service
-              docker build --platform linux/amd64 -t ${DOCKERHUB_USER}/order-service:latest order-service
-              docker build --platform linux/amd64 -t ${DOCKERHUB_USER}/trade-enrichment-service:latest trade-capture-enrichment-service
+              # 🧩 Build Gateway Service
+              docker build --platform linux/amd64 \
+                --build-arg DT_API_TOKEN=$DT_API_TOKEN \
+                -t ${DOCKERHUB_USER}/gateway-service:latest gateway-service
 
+              # 🧩 Build Order Service
+              docker build --platform linux/amd64 \
+                --build-arg DT_API_TOKEN=$DT_API_TOKEN \
+                -t ${DOCKERHUB_USER}/order-service:latest order-service
+
+              # 🧩 Build Trade Enrichment Service
+              docker build --platform linux/amd64 \
+                --build-arg DT_API_TOKEN=$DT_API_TOKEN \
+                -t ${DOCKERHUB_USER}/trade-enrichment-service:latest trade-capture-enrichment-service
+
+              # 🧩 Push Images
               docker push ${DOCKERHUB_USER}/gateway-service:latest
               docker push ${DOCKERHUB_USER}/order-service:latest
               docker push ${DOCKERHUB_USER}/trade-enrichment-service:latest
