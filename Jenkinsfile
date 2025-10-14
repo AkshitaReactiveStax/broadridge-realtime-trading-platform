@@ -35,9 +35,9 @@ pipeline {
               echo "🔧 Building Docker images..."
               echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
-              docker build -t ${DOCKERHUB_USER}/gateway-service:latest gateway-service
-              docker build -t ${DOCKERHUB_USER}/order-service:latest order-service
-              docker build -t ${DOCKERHUB_USER}/trade-enrichment-service:latest trade-capture-enrichment-service
+              docker build --platform linux/amd64 -t ${DOCKERHUB_USER}/gateway-service:latest gateway-service
+              docker build --platform linux/amd64 -t ${DOCKERHUB_USER}/order-service:latest order-service
+              docker build --platform linux/amd64 -t ${DOCKERHUB_USER}/trade-enrichment-service:latest trade-capture-enrichment-service
 
               docker push ${DOCKERHUB_USER}/gateway-service:latest
               docker push ${DOCKERHUB_USER}/order-service:latest
