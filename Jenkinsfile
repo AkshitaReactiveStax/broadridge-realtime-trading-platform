@@ -41,16 +41,19 @@ pipeline {
               # 🧩 Build Gateway Service
               docker build --platform linux/amd64 \
                 --build-arg DT_API_TOKEN=$DT_API_TOKEN \
+                --build-arg DT_ENV_URL=https://mmg37294.live.dynatrace.com \
                 -t ${DOCKERHUB_USER}/gateway-service:latest gateway-service
 
               # 🧩 Build Order Service
               docker build --platform linux/amd64 \
                 --build-arg DT_API_TOKEN=$DT_API_TOKEN \
+                --build-arg DT_ENV_URL=https://mmg37294.live.dynatrace.com \
                 -t ${DOCKERHUB_USER}/order-service:latest order-service
 
               # 🧩 Build Trade Enrichment Service
               docker build --platform linux/amd64 \
                 --build-arg DT_API_TOKEN=$DT_API_TOKEN \
+                --build-arg DT_ENV_URL=https://mmg37294.live.dynatrace.com \
                 -t ${DOCKERHUB_USER}/trade-enrichment-service:latest trade-capture-enrichment-service
 
               # 🧩 Push Images
